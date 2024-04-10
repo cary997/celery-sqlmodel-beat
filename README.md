@@ -18,6 +18,31 @@ install
 pip install celery-sqlmodel-beat
 ```
 
+init_models.py
+```bash
+from sqlmodel import SQLModel, create_engine
+
+from app.ext.sqlmodel_celery_beat.models import (
+    ClockedSchedule,
+    CrontabSchedule,
+    IntervalSchedule,
+    PeriodicTask,
+    PeriodicTasksChanged,
+    SolarSchedule,
+)
+
+if __name__ == "__main__":
+    engine = create_engine('sqlite:///schedule.db')
+    def create_db_and_tables() -> None:
+        """
+        create table
+        """
+        SQLModel.metadata.create_all(engine)
+
+    create_db_and_tables()
+
+```
+
 tasks.py
 
 ```bash
