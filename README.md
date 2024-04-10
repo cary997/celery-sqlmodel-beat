@@ -13,6 +13,11 @@ from sqlmodel-celery-beat to support pydantic v2. and optimize some functions
 
 You can run the beat instance using:
 
+install
+```bash
+pip install celery-sqlmodel-beat
+```
+
 tasks.py
 
 ```bash
@@ -44,6 +49,7 @@ def add(x, y):
 
 ```
 
+Run Celery
 ```bash
 celery -A tasks:celery worker -l info
 celery -A tasks:celery beat -S tasks:DatabaseScheduler -l info
