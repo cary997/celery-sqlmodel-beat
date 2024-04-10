@@ -68,7 +68,6 @@ class IntervalPeriod(str, Enum):
 class IntervalSchedule(ModelMixin, table=True):
     """Schedule executing every n seconds, minutes, hours or days."""
 
-    __tablename__ = "tasks_interval_schedule"
     every: int = 0
     period: IntervalPeriod = Field(
         sa_column=Column(
@@ -111,7 +110,6 @@ class SolarSchedule(ModelMixin, table=True):
     # >>> event='sunrise', latitude=40.7128, longitude=74.0060
     """
 
-    __tablename__ = "tasks_solar_schedule"
     event: SolarEvent = Field(
         sa_column=Column(sa.Enum(SolarEvent, create_constraint=True))
     )
@@ -149,7 +147,6 @@ class SolarSchedule(ModelMixin, table=True):
 class ClockedSchedule(ModelMixin, table=True):
     """Clocked schedule, run once at a specific time."""
 
-    __tablename__ = "tasks_clocked_schedule"
     clocked_time: datetime = Field(
         sa_column=Column(sa.DateTime(timezone=True), nullable=False)
     )
@@ -262,7 +259,6 @@ class PeriodicTasksChanged(SQLModel, table=True):
     Doing this, so we also track deletions, and not just insert/update.
     """
 
-    __tablename__ = "tasks_periodic_change"
     id: int = Field(
         default=None, primary_key=True, sa_column_kwargs={"autoincrement": False}
     )
@@ -321,7 +317,6 @@ class PeriodicTasksChanged(SQLModel, table=True):
 class PeriodicTask(ModelMixin, table=True):
     """Model representing a periodic task."""
 
-    __tablename__ = "tasks_periodic_task"
     name: str = Field(max_length=200, unique=True)
     task: str = Field(max_length=200)
 
