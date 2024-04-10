@@ -1,14 +1,17 @@
 [tool.poetry]
 name = "celery-sqlmodel-beat"
 version = "0.1.5"
-description = ""
 authors = ["Cray"]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "celery_sqlmodel_beat"}]
+description = "Celery Periodic Tasks backed by the sqlmodel"
+
+[project.urls]
+Homepage = "https://github.com/cary997/celery-sqlmodel-beat"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10"
 setuptools = "^69.2.0"
 celery = "^5.3.6"
 sqlmodel = "^0.0.16"
