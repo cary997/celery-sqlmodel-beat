@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "celery-sqlmodel-beat"
-version = "0.1.5"
+version = "0.1.4"
 authors = ["Cray"]
 license = "MIT"
 readme = "README.md"
