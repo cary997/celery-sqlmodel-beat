@@ -1,9 +1,11 @@
 [tool.poetry]
 name = "celery-sqlmodel-beat"
-version = "0.1.0"
+version = "0.1.5"
 description = ""
 authors = ["Cray"]
+license = "MIT"
 readme = "README.md"
+packages = [{include = "celery_sqlmodel_beat"}]
 
 [tool.poetry.dependencies]
 python = "^3.12"
@@ -12,6 +14,11 @@ celery = "^5.3.6"
 sqlmodel = "^0.0.16"
 cron-descriptor = "^1.4.3"
 
+[tool.poetry.group.dev.dependencies]
+eventlet = "^0.35.2"
+isort = "^5.13.2"
+mypy = "^1.9.0"
+black = "^24.3.0"
 
 [build-system]
 requires = ["poetry-core"]
