@@ -13,6 +13,7 @@ from cron_descriptor import (
     get_description,
 )
 from pydantic import ValidationError, field_validator, model_validator
+from pydantic_core import InitErrorDetails, PydanticCustomError
 from sqlalchemy.event import listen
 from sqlmodel import Column, Field, Relationship, Session, SQLModel, select, BIGINT
 
@@ -378,36 +379,80 @@ class PeriodicTask(ModelMixin, table=True):
     no_changes: bool = False
 
     @model_validator(mode="after")
-    @classmethod
-    def validate_unique(cls, values: dict):
-
-        schedule_types = ["interval", "crontab", "solar", "clocked"]
-        selected_schedule_types = [
-            s for s in schedule_types if values.get(s) is not None
-        ]
+    def validate_unique(self):
+        selected_schedule_types = list(
+            filter(
+                lambda element: element is not None,
+                [
+                    self.interval,
+                    self.crontab,
+                    self.solar,
+                    self.clocked,
+                ],
+            )
+        )
 
         if len(selected_schedule_types) == 0:
-            raise ValidationError(
-                "One of clocked, interval, crontab, or solar "
-                "must be set."  # pylint: disable=implicit-str-concat
+            raise ValidationError.from_exception_data(
+                title="Missing Schedule Type",
+                line_errors=[
+                    InitErrorDetails(
+                        input=self.name,
+                        type=PydanticCustomError(
+                            "String",
+                            "One of clocked, interval, crontab, or solar must be set.",
+                        ),
+                    )
+                ],
             )
 
-        err_msg = (
-            "Only one of clocked, interval, crontab, "
-            "or solar must be set"  # pylint: disable=implicit-str-concat
-        )
+        err_msg = "Only one of clocked, interval, crontab, or solar must be set"
         if len(selected_schedule_types) > 1:
             error_info = {}
             for selected_schedule_type in selected_schedule_types:
                 error_info[selected_schedule_type] = [err_msg]
-            raise ValidationError(f"{error_info}")
+            raise ValidationError.from_exception_data(
+                title="Schedule Conflict",
+                line_errors=[
+                    InitErrorDetails(
+                        input=self.name,
+                        type=PydanticCustomError(
+                            "String",
+                            f"{error_info}",
+                        ),
+                    )
+                ],
+            )
 
         # clocked must be one off task
-        if values["clocked"] and not values["one_off"]:
+        if self.clocked and not self.one_off:
             err_msg = "clocked must be one off, one_off must set True"
-            raise ValidationError(err_msg)
-        if (values["expires_seconds"] is not None) and (values["expires"] is not None):
-            raise ValidationError("Only one can be set, in expires and expire_seconds")
+            raise ValidationError.from_exception_data(
+                title="Clocked Error",
+                line_errors=[
+                    InitErrorDetails(
+                        input=self.name,
+                        type=PydanticCustomError(
+                            "String",
+                            f"{err_msg}",
+                        ),
+                    )
+                ],
+            )
+        if (self.expire_seconds is not None) and (self.expires is not None):
+            raise ValidationError.from_exception_data(
+                title="Expires Error",
+                line_errors=[
+                    InitErrorDetails(
+                        input=self.name,
+                        type=PydanticCustomError(
+                            "String",
+                            "Only one can be set, in expires and expire_seconds",
+                        ),
+                    )
+                ],
+            )
+        return self
 
     @property
     def expires_(self):
