@@ -322,16 +322,16 @@ class PeriodicTask(ModelMixin, table=True):
     task: str = Field(max_length=200)
 
     interval_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="tasks_interval_schedule.id")
-    interval: Optional[IntervalSchedule] = Relationship(back_populates="periodic_task")
+    interval: Optional[IntervalSchedule] = Relationship(back_populates="periodic_task",sa_relationship_kwargs={"lazy": "selectin"},)
 
     crontab_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="tasks_crontab_schedule.id")
-    crontab: Optional[CrontabSchedule] = Relationship(back_populates="periodic_task")
+    crontab: Optional[CrontabSchedule] = Relationship(back_populates="periodic_task",sa_relationship_kwargs={"lazy": "selectin"},)
 
     solar_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="tasks_solar_schedule.id")
-    solar: Optional[SolarSchedule] = Relationship(back_populates="periodic_task")
+    solar: Optional[SolarSchedule] = Relationship(back_populates="periodic_task",sa_relationship_kwargs={"lazy": "selectin"},)
 
     clocked_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="tasks_clocked_schedule.id")
-    clocked: Optional[ClockedSchedule] = Relationship(back_populates="periodic_task")
+    clocked: Optional[ClockedSchedule] = Relationship(back_populates="periodic_task",sa_relationship_kwargs={"lazy": "selectin"},)
 
     # These are JSON fields, so we can store any serializable data
     # For querying, we can use the JSON operators in SQLAlchemy
