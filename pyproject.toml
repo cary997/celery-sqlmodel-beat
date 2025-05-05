@@ -1,7 +1,7 @@
-[tool.poetry]
+[project]
 name = "celery-sqlmodel-beat"
-version = "0.1.8"
-authors = ["Cray"]
+version = "0.1.9"
+authors = [{name = "Cray"}]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "celery_sqlmodel_beat"}]
@@ -12,9 +12,9 @@ Homepage = "https://github.com/cary997/celery-sqlmodel-beat"
 
 [tool.poetry.dependencies]
 python = "^3.10"
-setuptools = "^69.2.0"
+setuptools = "70.0.0"
 celery = "^5.3.6"
-sqlmodel = "^0.0.16"
+sqlmodel = "^0.0.24"
 cron-descriptor = "^1.4.3"
 
 [tool.poetry.group.dev.dependencies]
