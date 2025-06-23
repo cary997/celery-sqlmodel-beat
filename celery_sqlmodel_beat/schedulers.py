@@ -11,7 +11,7 @@ from celery.utils.log import get_logger
 from celery.utils.time import maybe_make_aware
 from kombu.utils.encoding import safe_repr, safe_str
 from kombu.utils.json import loads
-from sqlmodel import Session, create_engine, select
+from sqlmodel import Session, create_engine, select, SQLModel
 
 from .clockedschedule import clocked
 from .models import (
@@ -218,6 +218,7 @@ class DatabaseScheduler(Scheduler):
         self.app = kwargs.get("app") or current_app._get_current_object()
         self.dburi = dburi or self.app.conf.beat_dburi
         self.engine = create_engine(self.dburi)
+        self.create_db_and_tables()
         Scheduler.__init__(self, *args, **kwargs)
         self._finalize = Finalize(self, self.sync, exitpriority=5)
         self.max_interval = (
@@ -225,6 +226,10 @@ class DatabaseScheduler(Scheduler):
                 or self.app.conf.beat_max_loop_interval
                 or DEFAULT_MAX_INTERVAL
         )
+
+    def create_db_and_tables(self) -> None:
+        logger.debug(f'create_db_and_tables - dburi: {self.dburi}')
+        SQLModel.metadata.create_all(self.engine)
 
     def get_session(self) -> Session:
         return Session(self.engine, expire_on_commit=False)

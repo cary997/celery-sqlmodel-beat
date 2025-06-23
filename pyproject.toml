@@ -1,27 +1,28 @@
-[tool.poetry]
+[project]
 name = "celery-sqlmodel-beat"
-version = "0.1.8"
-authors = ["Cray"]
+version = "0.1.10"
+authors = [{name = "Cray"}]
 license = "MIT"
 readme = "README.md"
 packages = [{include = "celery_sqlmodel_beat"}]
 description = "Celery Periodic Tasks backed by the sqlmodel"
+requires-python = ">=3.11,<3.13"
+
+dependencies = [
+    "celery (>=5.5.3,<6.0.0)",
+    "sqlmodel (>=0.0.24,<0.0.25)",
+    "cron-descriptor (>=1.4.5,<2.0.0)"
+]
 
 [project.urls]
 Homepage = "https://github.com/cary997/celery-sqlmodel-beat"
-
-[tool.poetry.dependencies]
-python = "^3.10"
-setuptools = "^69.2.0"
-celery = "^5.3.6"
-sqlmodel = "^0.0.16"
-cron-descriptor = "^1.4.3"
 
 [tool.poetry.group.dev.dependencies]
 eventlet = "^0.35.2"
 isort = "^5.13.2"
 mypy = "^1.9.0"
 black = "^24.3.0"
+setuptools = "^80.9.0"
 
 [build-system]
 requires = ["poetry-core"]

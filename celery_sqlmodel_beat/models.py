@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Optional
 from zoneinfo import ZoneInfo
@@ -14,8 +14,10 @@ from cron_descriptor import (
 )
 from pydantic import ValidationError, field_validator, model_validator
 from pydantic_core import InitErrorDetails, PydanticCustomError
+from sqlalchemy import DateTime
 from sqlalchemy.event import listen
-from sqlmodel import Column, Field, Relationship, Session, SQLModel, select, BIGINT
+from sqlalchemy.orm import declared_attr
+from sqlmodel import Column, Field, Relationship, Session, SQLModel as _SQLModel, select, BIGINT
 
 from .clockedschedule import clocked
 from .tzcrontab import TzAwareCrontab
@@ -29,16 +31,38 @@ def cronexp(field: str) -> str:
     return field and str(field).replace(" ", "") or "*"
 
 
+class SQLModel(_SQLModel):
+    """
+    A base class for SQLAlchemy ORM models.
+
+    Inherits:
+        _SQLModel: Base model from which all mapped classes should inherit.
+
+    Methods:
+        __tablename__ -> str:
+            Returns the table name for the SQL model, which is the class's name.
+    """
+
+    @declared_attr
+    @classmethod
+    def __tablename__(cls) -> str:
+        return f"beat_{cls.__name__.lower()}"
+
+
+
 class ModelMixin(SQLModel):
     """Base model mixin"""
     id: int = Field(primary_key=True)
     created_at: datetime = Field(
-        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False),
-        default=nowfun(),
+        sa_type=DateTime(timezone=True),
+        default_factory=lambda: datetime.now(timezone.utc),
+        nullable=False,
     )
     updated_at: datetime = Field(
-        sa_column=sa.Column(sa.DateTime(timezone=True), nullable=False),
-        default_factory=nowfun,
+        sa_type=DateTime(timezone=True),
+        sa_column_kwargs={"onupdate": lambda: datetime.now(timezone.utc)},
+        default_factory=lambda: datetime.now(timezone.utc),
+        nullable=False,
     )
 
     @classmethod
@@ -321,17 +345,17 @@ class PeriodicTask(ModelMixin, table=True):
     name: str = Field(max_length=200, unique=True)
     task: str = Field(max_length=200)
 
-    interval_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="tasks_interval_schedule.id")
-    interval: Optional[IntervalSchedule] = Relationship(back_populates="periodic_task",sa_relationship_kwargs={"lazy": "selectin"},)
+    interval_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="beat_intervalschedule.id")
+    interval: Optional[IntervalSchedule] = Relationship(back_populates="periodic_task", sa_relationship_kwargs={"lazy": "selectin"},)
 
-    crontab_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="tasks_crontab_schedule.id")
-    crontab: Optional[CrontabSchedule] = Relationship(back_populates="periodic_task",sa_relationship_kwargs={"lazy": "selectin"},)
+    crontab_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="beat_crontabschedule.id")
+    crontab: Optional[CrontabSchedule] = Relationship(back_populates="periodic_task", sa_relationship_kwargs={"lazy": "selectin"},)
 
-    solar_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="tasks_solar_schedule.id")
-    solar: Optional[SolarSchedule] = Relationship(back_populates="periodic_task",sa_relationship_kwargs={"lazy": "selectin"},)
+    solar_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="beat_solarschedule.id")
+    solar: Optional[SolarSchedule] = Relationship(back_populates="periodic_task", sa_relationship_kwargs={"lazy": "selectin"},)
 
-    clocked_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="tasks_clocked_schedule.id")
-    clocked: Optional[ClockedSchedule] = Relationship(back_populates="periodic_task",sa_relationship_kwargs={"lazy": "selectin"},)
+    clocked_id: Optional[int] = Field(sa_type=BIGINT, default=None, foreign_key="beat_clockedschedule.id")
+    clocked: Optional[ClockedSchedule] = Relationship(back_populates="periodic_task", sa_relationship_kwargs={"lazy": "selectin"},)
 
     # These are JSON fields, so we can store any serializable data
     # For querying, we can use the JSON operators in SQLAlchemy
